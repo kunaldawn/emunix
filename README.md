@@ -42,6 +42,9 @@ This project supports two primary workflows: **Native** (running directly on you
 | Start Default | `make run` | `make docker-run` |
 | Start Specific | `make run AVD_NAME=pixel_6` | `make docker-run AVD_NAME=pixel_6` |
 
+> [!TIP]
+> **Architecture Support**: By default, the system uses `x86_64`. You can specify `arm64-v8a` for ARM64 images using the `ABI` variable (e.g., `make create-avd ABI=arm64-v8a`). Note that running ARM64 images on x86_64 hardware works via software emulation but is slower.
+
 > [!NOTE]  
 > **Auto-Discovery**: If `AVD_NAME` is not provided, the system will automatically launch the most recently created AVD or fall back to the first one found.
 
@@ -56,8 +59,9 @@ If you need to test your app on both Android 11 (API 30) and Android 14 (API 34)
 make install-image ANDROID_VERSION=android-30
 make create-avd ANDROID_VERSION=android-30 AVD_NAME=legacy_phone
 
-make install-image ANDROID_VERSION=android-34
-make create-avd ANDROID_VERSION=android-34 AVD_NAME=latest_phone
+# ARM64 Image on x86_64 Host
+make install-image ANDROID_VERSION=android-33 ABI=arm64-v8a
+make create-avd ANDROID_VERSION=android-33 ABI=arm64-v8a AVD_NAME=arm_phone
 
 # Docker (Container)
 make docker-install-image ANDROID_VERSION=android-30

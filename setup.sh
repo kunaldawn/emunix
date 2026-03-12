@@ -47,8 +47,16 @@ SDK_MANAGER="sdk/cmdline-tools/latest/bin/sdkmanager"
 echo "Accepting licenses..."
 yes | $SDK_MANAGER --sdk_root=$ANDROID_HOME --licenses
 
-echo "Installing platform-tools, emulator, and system image..."
-$SDK_MANAGER --sdk_root=$ANDROID_HOME "platform-tools" "emulator" "system-images;android-34;google_apis;x86_64"
+# Determine host architecture for default system image
+ARCH=$(uname -m)
+case $ARCH in
+    x86_64) ABI="x86_64" ;;
+    aarch64|arm64) ABI="arm64-v8a" ;;
+    *) ABI="x86_64" ;; # Fallback to x86_64
+esac
+
+echo "Installing platform-tools, emulator, and system image ($ABI)..."
+$SDK_MANAGER --sdk_root=$ANDROID_HOME "platform-tools" "emulator" "system-images;android-34;google_apis;$ABI"
 
 echo "Setup complete!"
 echo "You can now use the Makefile to create and run the emulator."

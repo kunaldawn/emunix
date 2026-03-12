@@ -13,7 +13,8 @@ ADB := $(SDK_ROOT)/platform-tools/adb
 # Configuration
 AVD_NAME ?= test_emulator
 ANDROID_VERSION ?= android-34
-SYSTEM_IMAGE ?= system-images;$(ANDROID_VERSION);google_apis;x86_64
+ABI ?= x86_64
+SYSTEM_IMAGE ?= system-images;$(ANDROID_VERSION);google_apis;$(ABI)
 
 # Env
 export ANDROID_HOME := $(SDK_ROOT)
