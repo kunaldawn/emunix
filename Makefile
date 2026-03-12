@@ -85,6 +85,10 @@ DOCKER_RUN := docker run -it --rm \
 	-v /tmp/.X11-unix:/tmp/.X11-unix \
 	-e DISPLAY=$(DISPLAY) \
 	-u $(shell id -u):$(shell id -g) \
+	--group-add $(shell getent group kvm | cut -d: -f3) \
+	--add-host localhost:127.0.0.1 \
+	--add-host localhost:::1 \
+	-e XDG_RUNTIME_DIR=/tmp \
 	-e HOME=/app \
 	$(DOCKER_IMAGE)
 

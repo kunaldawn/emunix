@@ -1,2 +1,5 @@
 .android
 sdk
+.cache
+.config
+.emulator*

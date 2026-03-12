@@ -27,6 +27,9 @@ RUN apt-get update && apt-get install -y \
     python3 \
     make \
     shellcheck \
+    mesa-utils \
+    iproute2 \
+    dnsutils \
     && rm -rf /var/lib/apt/lists/*
 
 # Set environment variables
