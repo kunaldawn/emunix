@@ -50,24 +50,68 @@ make run
 | `make list-images` | List available system images |
 | `make clean` | Remove all SDK and AVD data |
 
-## Configuration
+## Examples
 
-You can override default settings via environment variables or Makefile arguments:
-
+### Basic Setup (Android 14)
+The default setup uses Android 14 (API 34).
 ```bash
-# Example: Setup and create an Android 13 emulator
-make install-image ANDROID_VERSION=android-33
-make create-avd ANDROID_VERSION=android-33 AVD_NAME=pixel_6
+./setup.sh        # Install dependencies and SDK
+make create-avd   # Create 'test_emulator'
+make run          # Start the emulator
+```
 
-# Run a specific AVD
+### Setup a Specific Version (e.g., Android 11)
+You can specify the version at any step.
+```bash
+# 1. Install the system image
+make install-image ANDROID_VERSION=android-30
+
+# 2. Create the AVD
+make create-avd ANDROID_VERSION=android-30 AVD_NAME=android_11_tablet
+
+# 3. Run it
+make run AVD_NAME=android_11_tablet
+```
+
+### Managing Multiple Emulators
+```bash
+# List what you have installed
+make list-avds
+
+# List what images you can install
+make list-images
+
+# Run the first one found (auto-discovery)
+make run
+
+# Run a specific one
 make run AVD_NAME=pixel_6
 ```
 
-### Auto-Discovery
-By default, `make run` will:
-1. Use the AVD name specified via `AVD_NAME=...`.
-2. Automatically pick the last AVD you created.
-3. Fall back to the first available AVD if nothing is specified.
+### Cleaning Up
+To delete everything and start fresh:
+```bash
+make clean
+```
+
+## Troubleshooting
+
+### KVM / Acceleration Issues
+If the emulator is slow, ensure KVM is enabled:
+```bash
+lsmod | grep kvm
+```
+If you get a "Permission Denied" error for `/dev/kvm`, add your user to the `kvm` group and **re-log**:
+```bash
+sudo usermod -aG kvm $USER
+```
+
+### Graphics Issues
+If the emulator fails to start due to graphics drivers, you can try software rendering:
+```bash
+# Edit Makefile or run manually:
+./sdk/emulator/emulator -avd [name] -gpu swiftshader_indirect
+```
 
 ## Directory Structure
 
