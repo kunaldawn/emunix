@@ -10,7 +10,7 @@ install_dependencies() {
     if [ -f /etc/debian_version ]; then
         echo "Detected Debian/Ubuntu-based system."
         sudo apt update
-        sudo apt install -y openjdk-17-jdk wget unzip qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils libpulse0 libglu1-mesa libmgh-dev
+        sudo apt install -y openjdk-17-jdk wget unzip qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils libpulse0 libglu1-mesa libgles2-mesa-dev libgbm-dev libncurses6
     elif [ -f /etc/fedora-release ]; then
         echo "Detected Fedora-based system."
         sudo dnf install -y java-17-openjdk wget unzip qemu-kvm libvirt bridge-utils libpulse mesa-libGLU

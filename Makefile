@@ -30,6 +30,13 @@ help:
 	@echo "  make list-images     - List available system images"
 	@echo "  make list-avds       - List created AVDs"
 	@echo "  make clean           - Remove SDK and .android directories (DANGER)"
+	@echo ""
+	@echo "Docker Targets (Prefixed with docker-):"
+	@echo "  make docker-build    - Build the environment image"
+	@echo "  make docker-create-avd"
+	@echo "  make docker-run"
+	@echo "  make docker-install-image"
+	@echo "  make docker-list-avds"
 
 install-image:
 	@echo "Installing $(SYSTEM_IMAGE)..."
@@ -58,7 +65,7 @@ run:
 		fi; \
 	fi; \
 	echo "Starting emulator $$AVD_TO_RUN..."; \
-	$(EMULATOR) -avd $$AVD_TO_RUN -no-snapshot-save -gpu host
+	$(EMULATOR) -avd $$AVD_TO_RUN -no-snapshot-save -gpu host $(EMULATOR_FLAGS)
 
 list-images:
 	$(SDK_MANAGER) --list | grep "system-images"
@@ -69,3 +76,33 @@ list-avds:
 clean:
 	@echo "Cleaning up..."
 	@rm -rf $(SDK_ROOT) $(ANDROID_USER_HOME)
+
+# Docker Configuration
+DOCKER_IMAGE := android-emulator-local
+DOCKER_RUN := docker run -it --rm \
+	--device /dev/kvm \
+	-v $(shell pwd):/app \
+	-v /tmp/.X11-unix:/tmp/.X11-unix \
+	-e DISPLAY=$(DISPLAY) \
+	-u $(shell id -u):$(shell id -g) \
+	-e HOME=/app \
+	$(DOCKER_IMAGE)
+
+docker-build:
+	docker build -t $(DOCKER_IMAGE) .
+
+# Docker targets matching native commands
+docker-install-image:
+	$(DOCKER_RUN) make install-image ANDROID_VERSION=$(ANDROID_VERSION)
+
+docker-create-avd:
+	$(DOCKER_RUN) make create-avd ANDROID_VERSION=$(ANDROID_VERSION) AVD_NAME=$(AVD_NAME)
+
+docker-run:
+	$(DOCKER_RUN) make run AVD_NAME=$(AVD_NAME) EMULATOR_FLAGS="$(EMULATOR_FLAGS)"
+
+docker-list-images:
+	$(DOCKER_RUN) make list-images
+
+docker-list-avds:
+	$(DOCKER_RUN) make list-avds

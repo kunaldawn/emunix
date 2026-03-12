@@ -10,7 +10,8 @@ This project provides a fully self-contained Android SDK and emulator environmen
 
 - **OS**: Linux (64-bit)
 - **Hardware**: CPU with virtualization support (Intel VT-x or AMD-V)
-- **Permissions**: `sudo` access for initial dependency installation
+- **Docker**: (Optional) For containerized execution
+- **Permissions**: `sudo` access for initial dependency installation or Docker group membership
 
 ### KVM Setup
 Ensure your user has access to `/dev/kvm`:
@@ -19,99 +20,99 @@ sudo usermod -aG kvm $USER
 ```
 *Note: Restart your session after running this command.*
 
-## Get Started
+## Usage Examples
 
-### 1. Installation
-Run the setup script to install system libraries and download the Android SDK:
+This project supports two primary workflows: **Native** (running directly on your host) and **Docker** (running in an isolated container). Both share the same logic and configuration.
+
+### 1. Initial Setup
+| Action | Native (Host) | Docker (Container) |
+|--------|---------------|--------------------|
+| Install Deps | `./setup.sh` | `make docker-build` |
+| Install Image | `make install-image` | `make docker-install-image` |
+
+### 2. Creating AVDs
+| Action | Native (Host) | Docker (Container) |
+|--------|---------------|--------------------|
+| Default (API 34) | `make create-avd` | `make docker-create-avd` |
+| Custom (e.g. Pixel 6) | `make create-avd AVD_NAME=pixel_6` | `make docker-create-avd AVD_NAME=pixel_6` |
+
+### 3. Launching the Emulator
+| Action | Native (Host) | Docker (Container) |
+|--------|---------------|--------------------|
+| Start Default | `make run` | `make docker-run` |
+| Start Specific | `make run AVD_NAME=pixel_6` | `make docker-run AVD_NAME=pixel_6` |
+
+> [!NOTE]  
+> **Auto-Discovery**: If `AVD_NAME` is not provided, the system will automatically launch the most recently created AVD or fall back to the first one found.
+
+## Practical Scenarios
+
+### Scenario A: Working with Multiple Android Versions
+If you need to test your app on both Android 11 (API 30) and Android 14 (API 34):
+
+**1. Install images and create AVDs:**
 ```bash
-./setup.sh
-```
-The script supports `apt` (Ubuntu/Debian), `dnf` (Fedora), and `pacman` (Arch).
-
-### 2. Create Emulator (AVD)
-Create a new Android Virtual Device:
-```bash
-make create-avd
-```
-
-### 3. Launch Emulator
-```bash
-make run
-```
-
-## Management
-
-| Command | Description |
-|---------|-------------|
-| `make install-image` | Install system image for `ANDROID_VERSION` |
-| `make create-avd` | Create AVD using specific system image |
-| `make run` | Launch the emulator |
-| `make list-avds` | List created virtual devices |
-| `make list-images` | List available system images |
-| `make clean` | Remove all SDK and AVD data |
-
-## Examples
-
-### Basic Setup (Android 14)
-The default setup uses Android 14 (API 34).
-```bash
-./setup.sh        # Install dependencies and SDK
-make create-avd   # Create 'test_emulator'
-make run          # Start the emulator
-```
-
-### Setup a Specific Version (e.g., Android 11)
-You can specify the version at any step.
-```bash
-# 1. Install the system image
+# Host
 make install-image ANDROID_VERSION=android-30
+make create-avd ANDROID_VERSION=android-30 AVD_NAME=legacy_phone
 
-# 2. Create the AVD
-make create-avd ANDROID_VERSION=android-30 AVD_NAME=android_11_tablet
+make install-image ANDROID_VERSION=android-34
+make create-avd ANDROID_VERSION=android-34 AVD_NAME=latest_phone
 
-# 3. Run it
-make run AVD_NAME=android_11_tablet
+# Docker (Container)
+make docker-install-image ANDROID_VERSION=android-30
+make docker-create-avd ANDROID_VERSION=android-30 AVD_NAME=legacy_phone
+
+make docker-install-image ANDROID_VERSION=android-34
+make docker-create-avd ANDROID_VERSION=android-34 AVD_NAME=latest_phone
 ```
 
-### Managing Multiple Emulators
+**2. Run a specific version:**
 ```bash
-# List what you have installed
-make list-avds
+# Host
+make run AVD_NAME=legacy_phone
 
-# List what images you can install
-make list-images
-
-# Run the first one found (auto-discovery)
-make run
-
-# Run a specific one
-make run AVD_NAME=pixel_6
+# Docker
+make docker-run AVD_NAME=latest_phone
 ```
 
-### Cleaning Up
-To delete everything and start fresh:
+### Scenario B: Simultaneous Execution
+To run two emulators at the same time, you must assign different ADB ports to avoid conflicts:
 ```bash
-make clean
+# Emulator 1 (Default port 5554/5555)
+make run AVD_NAME=emulator_1
+
+# Emulator 2 (Next available ports, e.g., 5556/5557)
+make run AVD_NAME=emulator_2 EMULATOR_FLAGS="-port 5556"
 ```
+*(Same logic applies to `make docker-run`)*
+
+
+## Management Tools
+Common commands for both workflows:
+- `make list-avds` / `make docker-list-avds`: Show virtual devices.
+- `make list-images` / `make docker-list-images`: Show available system images.
+- `make clean`: Delete all SDK and AVD data from the host directory.
+
+> [!TIP]
+> **Docker GUI**: To see the emulator window when running in Docker, you may need to run `xhost +local:docker` on your host once per session.
 
 ## Troubleshooting
-
-### KVM / Acceleration Issues
-If the emulator is slow, ensure KVM is enabled:
+### KVM & Permissions
+Ensure KVM is accessible and your user has the right permissions:
 ```bash
 lsmod | grep kvm
-```
-If you get a "Permission Denied" error for `/dev/kvm`, add your user to the `kvm` group and **re-log**:
-```bash
 sudo usermod -aG kvm $USER
+sudo usermod -aG libvirt $USER
+# IMPORTANT: Log out and back in for changes to take effect
 ```
 
-### Graphics Issues
-If the emulator fails to start due to graphics drivers, you can try software rendering:
+### Graphics Latency
+If the emulator is unstable, try software rendering:
 ```bash
-# Edit Makefile or run manually:
-./sdk/emulator/emulator -avd [name] -gpu swiftshader_indirect
+make run EMULATOR_FLAGS="-gpu swiftshader_indirect"
 ```
+*(Note: You can add `EMULATOR_FLAGS` to any run command above)*
 
 ## Directory Structure
 
