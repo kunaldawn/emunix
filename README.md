@@ -43,7 +43,8 @@ make run
 
 | Command | Description |
 |---------|-------------|
-| `make create-avd` | Create default AVD (API 34) |
+| `make install-image` | Install system image for `ANDROID_VERSION` |
+| `make create-avd` | Create AVD using specific system image |
 | `make run` | Launch the emulator |
 | `make list-avds` | List created virtual devices |
 | `make list-images` | List available system images |
@@ -54,7 +55,8 @@ make run
 You can override default settings via environment variables or Makefile arguments:
 
 ```bash
-# Example: Create an Android 13 emulator
+# Example: Setup and create an Android 13 emulator
+make install-image ANDROID_VERSION=android-33
 make create-avd ANDROID_VERSION=android-33 AVD_NAME=pixel_6
 ```
 

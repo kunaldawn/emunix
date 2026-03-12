@@ -20,17 +20,27 @@ export ANDROID_HOME := $(SDK_ROOT)
 export ANDROID_SDK_HOME := $(shell pwd)
 export ANDROID_AVD_HOME := $(shell pwd)/.android/avd
 
-.PHONY: help create-avd run clean list-images list-avds
+.PHONY: help create-avd run clean list-images list-avds install-image
 
 help:
 	@echo "Available targets:"
 	@echo "  make create-avd      - Create a new AVD (Default: $(AVD_NAME))"
+	@echo "  make install-image   - Install the system image for $(ANDROID_VERSION)"
 	@echo "  make run             - Launch the emulator"
 	@echo "  make list-images     - List available system images"
 	@echo "  make list-avds       - List created AVDs"
 	@echo "  make clean           - Remove SDK and .android directories (DANGER)"
 
+install-image:
+	@echo "Installing $(SYSTEM_IMAGE)..."
+	$(SDK_MANAGER) "$(SYSTEM_IMAGE)"
+
 create-avd:
+	@if [ ! -d "$(SDK_ROOT)/system-images/$(ANDROID_VERSION)" ]; then \
+		echo "Error: System image for $(ANDROID_VERSION) not found."; \
+		echo "Run 'make install-image' first."; \
+		exit 1; \
+	fi
 	@echo "Creating AVD $(AVD_NAME) for $(ANDROID_VERSION)..."
 	@echo "no" | $(AVD_MANAGER) create avd -n $(AVD_NAME) -k "$(SYSTEM_IMAGE)" --force
 
