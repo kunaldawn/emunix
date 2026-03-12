@@ -58,7 +58,16 @@ You can override default settings via environment variables or Makefile argument
 # Example: Setup and create an Android 13 emulator
 make install-image ANDROID_VERSION=android-33
 make create-avd ANDROID_VERSION=android-33 AVD_NAME=pixel_6
+
+# Run a specific AVD
+make run AVD_NAME=pixel_6
 ```
+
+### Auto-Discovery
+By default, `make run` will:
+1. Use the AVD name specified via `AVD_NAME=...`.
+2. Automatically pick the last AVD you created.
+3. Fall back to the first available AVD if nothing is specified.
 
 ## Directory Structure
 

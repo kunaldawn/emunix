@@ -43,10 +43,22 @@ create-avd:
 	fi
 	@echo "Creating AVD $(AVD_NAME) for $(ANDROID_VERSION)..."
 	@echo "no" | $(AVD_MANAGER) create avd -n $(AVD_NAME) -k "$(SYSTEM_IMAGE)" --force
+	@echo "$(AVD_NAME)" > .android/last_avd
 
 run:
-	@echo "Starting emulator $(AVD_NAME)..."
-	@$(EMULATOR) -avd $(AVD_NAME) -no-snapshot-save -gpu host
+	@AVD_TO_RUN=$(AVD_NAME); \
+	if [ "$$AVD_TO_RUN" = "test_emulator" ]; then \
+		if [ -f .android/last_avd ]; then \
+			AVD_TO_RUN=$$(cat .android/last_avd); \
+		else \
+			FIRST_AVD=$$( $(AVD_MANAGER) list avd | grep "Name:" | head -n 1 | awk '{print $$2}' ); \
+			if [ -n "$$FIRST_AVD" ]; then \
+				AVD_TO_RUN=$$FIRST_AVD; \
+			fi; \
+		fi; \
+	fi; \
+	echo "Starting emulator $$AVD_TO_RUN..."; \
+	$(EMULATOR) -avd $$AVD_TO_RUN -no-snapshot-save -gpu host
 
 list-images:
 	$(SDK_MANAGER) --list | grep "system-images"
